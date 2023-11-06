@@ -1,5 +1,8 @@
-package com.chessapp.chess.user;
+package com.chessapp.chess.controller;
 
+import com.chessapp.chess.dto.CreateUserProfileRequest;
+import com.chessapp.chess.model.UserProfile;
+import com.chessapp.chess.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("api/v1/users")
+@RequestMapping("api/v1/user-profile")
 public class UserController {
 
     private final UserService userService;
@@ -23,16 +26,13 @@ public class UserController {
     @GetMapping("/all")
     public ResponseEntity<List<UserProfile>> getUserProfiles(){ return new ResponseEntity<List<UserProfile>>(userService.getAllUserProfiles(),HttpStatus.OK); }
     @PostMapping
-    public ResponseEntity<?> createNewUserProfile(@RequestBody Map<String,String> payload) throws Exception {
-        String username = payload.get("username");
-        String password = payload.get("password");
-        String email = payload.get("email");
-
-        if(username.isEmpty() || password.isEmpty() || email.isEmpty()){
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User properties cannot be null.");
-        }
-
-        return new ResponseEntity<UserProfile>(userService.createNewUserProfile(username,password,email),HttpStatus.CREATED);
+    public ResponseEntity<?> createNewUserProfile(@RequestBody CreateUserProfileRequest request) throws Exception {
+        String firstname = request.getFirstname();
+        String lastname = request.getLastname();
+        String username = request.getUsername();
+        String password = request.getPassword();
+        String email = request.getEmail();
+        return new ResponseEntity<UserProfile>(userService.createNewUserProfile(firstname,lastname,username,password,email),HttpStatus.CREATED);
     }
     @DeleteMapping("{id}")
     public ResponseEntity<String> deleteUserProfile(@PathVariable Long id){
