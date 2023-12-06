@@ -1,12 +1,8 @@
-package com.chessapp.chess.model;
+package com.chessapp.chess.model.user;
 
+import com.chessapp.chess.dto.CreateUserProfileRequest;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.Objects;
+import lombok.*;
 
 
 @Data
@@ -27,7 +23,7 @@ public class UserProfile {
     private String password;
     private String email;
     private String userProfileImageLink;
-    private boolean status;
+    private UserStatus status;
 
     public UserProfile(String firstname, String lastname, String username, String password, String email) {
         this.firstname = firstname;
@@ -38,4 +34,12 @@ public class UserProfile {
     }
 
 
+    public UserProfile(CreateUserProfileRequest request) {
+        this.firstname = request.getFirstname();
+        this.lastname = request.getLastname();
+        this.username = request.getUsername();
+        this.password = request.getPassword();
+        this.email = request.getEmail();
+        this.status = UserStatus.OFFLINE;
+    }
 }

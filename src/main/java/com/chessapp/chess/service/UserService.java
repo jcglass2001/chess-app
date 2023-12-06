@@ -1,8 +1,12 @@
 package com.chessapp.chess.service;
 
-import com.chessapp.chess.model.UserProfile;
+import com.chessapp.chess.dto.CreateUserProfileRequest;
+import com.chessapp.chess.dto.UpdateUserProfileRequest;
+import com.chessapp.chess.exception.GenericAlreadyExistsException;
+import com.chessapp.chess.exception.UserNotFoundException;
+import com.chessapp.chess.model.user.UserProfile;
 import com.chessapp.chess.repo.UserProfileRepository;
-import org.apache.catalina.User;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,47 +22,54 @@ public class UserService {
         this.userProfileRepository = userProfileRepository;
     }
 
-    public List<UserProfile> getUserProfiles(){
-        return userProfileRepository.findAll();
+
+    public Optional<UserProfile> getUserProfileByID(long id) {
+        Optional<UserProfile> userProfile = userProfileRepository.findUserProfileById(id);
+
+        if(userProfile.isEmpty()){
+            throw new UserNotFoundException(String.format("User not found with id: %s", id));
+        }
+        return userProfile;
     }
 
+    public UserProfile createNewUserProfile(CreateUserProfileRequest request) throws Exception {
 
-    public Optional<UserProfile> getUserProfileByID(long uuid) {
-        return userProfileRepository.findUserProfileById(uuid);
-    }
-
-    public UserProfile createNewUserProfile(String firstname, String lastname, String username, String password, String email) throws Exception {
-        //input check
-        validateUserInput(firstname, lastname, username, password, email);
         //repo check
-        Optional<UserProfile> existingUsername = userProfileRepository.findByUsername(username);
-        Optional<UserProfile> existingEmail = userProfileRepository.findByEmail(email);
+        Optional<UserProfile> existingUsername = userProfileRepository.findByUsername(request.getUsername());
+        Optional<UserProfile> existingEmail = userProfileRepository.findByEmail(request.getEmail());
 
         if(existingEmail.isPresent()){
-            throw new IllegalStateException("Email already in use.");
+            throw new GenericAlreadyExistsException("Email is already in use.");
         }
         if(existingUsername.isPresent()){
-            throw new IllegalStateException("Username taken.");
+            throw new GenericAlreadyExistsException("Username is already in use.");
         }
         //save to database
-        return userProfileRepository.save(new UserProfile(firstname, lastname, username,password,email));
+        return userProfileRepository.save(new UserProfile(request));
 
     }
 
     public void deleteUserProfile(Long id) {
         UserProfile userProfile = userProfileRepository.findById(id)
-                .orElseThrow(() -> new IllegalStateException(String.format("User with id: '%s' not found", id)));
-        userProfileRepository.delete(userProfile);
+                .orElseThrow(() -> new UserNotFoundException(String.format("User not found with id: %s", id)));
 
+        userProfileRepository.delete(userProfile);
+    }
+    public UserProfile updateUserProfile(Long id, UpdateUserProfileRequest request){
+        UserProfile userProfile = userProfileRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(String.format("User not found with id: %s", id)));
+
+        ModelMapper modelMapper = new ModelMapper();
+        modelMapper.map(request, userProfile);
+
+        userProfileRepository.save(userProfile);
+
+
+        return userProfile;
     }
 
     public List<UserProfile> getAllUserProfiles() {
         return userProfileRepository.findAll();
     }
 
-    private static void validateUserInput(String firstname, String lastname, String username, String password, String email) {
-        if(firstname.isBlank() || lastname.isBlank() || username.isBlank() || password.isBlank() || email.isBlank()){
-            throw new IllegalArgumentException("Field parameters cannot be empty.");
-        }
-    }
 }
