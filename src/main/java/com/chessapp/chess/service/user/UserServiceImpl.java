@@ -1,8 +1,6 @@
-package com.chessapp.chess.service;
+package com.chessapp.chess.service.user;
 
-import com.chessapp.chess.dto.CreateUserProfileRequest;
-import com.chessapp.chess.dto.UpdateUserProfileRequest;
-import com.chessapp.chess.exception.GenericAlreadyExistsException;
+import com.chessapp.chess.dto.UserRequests.UpdateUserProfileRequest;
 import com.chessapp.chess.exception.UserNotFoundException;
 import com.chessapp.chess.model.user.UserProfile;
 import com.chessapp.chess.repo.UserProfileRepository;
@@ -14,16 +12,16 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class UserService {
+public class UserServiceImpl implements UserService {
     private final UserProfileRepository userProfileRepository;
 
     @Autowired
-    public UserService(UserProfileRepository userProfileRepository) {
+    public UserServiceImpl(UserProfileRepository userProfileRepository) {
         this.userProfileRepository = userProfileRepository;
     }
 
-
-    public Optional<UserProfile> getUserProfileByID(long id) {
+    @Override
+    public Optional<UserProfile> getUserProfileById(long id) {
         Optional<UserProfile> userProfile = userProfileRepository.findUserProfileById(id);
 
         if(userProfile.isEmpty()){
@@ -32,6 +30,8 @@ public class UserService {
         return userProfile;
     }
 
+    /*
+    @Override
     public UserProfile createNewUserProfile(CreateUserProfileRequest request) throws Exception {
 
         //repo check
@@ -47,14 +47,15 @@ public class UserService {
         //save to database
         return userProfileRepository.save(new UserProfile(request));
 
-    }
-
+    }*/
+    @Override
     public void deleteUserProfile(Long id) {
         UserProfile userProfile = userProfileRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(String.format("User not found with id: %s", id)));
 
         userProfileRepository.delete(userProfile);
     }
+    @Override
     public UserProfile updateUserProfile(Long id, UpdateUserProfileRequest request){
         UserProfile userProfile = userProfileRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(String.format("User not found with id: %s", id)));
@@ -67,7 +68,7 @@ public class UserService {
 
         return userProfile;
     }
-
+    @Override
     public List<UserProfile> getAllUserProfiles() {
         return userProfileRepository.findAll();
     }

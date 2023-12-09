@@ -1,4 +1,4 @@
-package com.chessapp.chess.dto;
+package com.chessapp.chess.dto.UserRequests;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
